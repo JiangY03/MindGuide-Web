@@ -37,6 +37,7 @@
   background: white;
   padding: 40px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  color: #000000;
 }
 
 .report-header {
@@ -47,33 +48,33 @@
 }
 
 .header-content {
-  color: #2c3e50;
+  color: #000000;
 }
 
 .report-header h1 {
   font-size: 2.5rem;
   margin-bottom: 8px;
-  color: #2c3e50;
+  color: #000000;
   font-weight: 700;
   letter-spacing: -0.5px;
 }
 
 .report-subtitle {
   font-size: 1.2rem;
-  color: #7f8c8d;
+  color: #000000;
   margin-bottom: 12px;
   font-style: italic;
 }
 
 .report-date {
   font-size: 1rem;
-  color: #7f8c8d;
+  color: #000000;
   margin-bottom: 12px;
 }
 
 .report-period {
   font-size: 0.95rem;
-  color: #95a5a6;
+  color: #000000;
   padding-top: 12px;
   border-top: 1px solid #ecf0f1;
 }
@@ -83,10 +84,27 @@
   page-break-inside: avoid;
   background: white;
   padding: 0;
+  color: #000000;
+}
+
+.report-section h2 {
+  color: #000000;
+}
+
+.report-section p {
+  color: #000000;
+}
+
+.report-section span {
+  color: #000000;
+}
+
+.report-section small {
+  color: #000000;
 }
 
 .section-title {
-  color: #2c3e50;
+  color: #000000;
   margin-bottom: 20px;
   font-size: 1.4rem;
   font-weight: 600;
@@ -97,7 +115,7 @@
 }
 
 .no-data-message {
-  color: #7f8c8d;
+  color: #000000;
   font-style: italic;
   padding: 20px;
   text-align: center;
@@ -177,7 +195,7 @@
 }
 
 .score-description {
-  color: #555;
+  color: #000000;
   line-height: 1.6;
   margin-bottom: 12px;
 }
@@ -185,7 +203,7 @@
 .wellbeing-status {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: #000000;
   padding: 8px 16px;
   background: #ecf0f1;
   border-radius: 6px;
@@ -208,7 +226,7 @@
 .stat-card {
   background: white;
   border: 2px solid #ecf0f1;
-  color: #2c3e50;
+  color: #000000;
   padding: 24px;
   border-radius: 8px;
   text-align: center;
@@ -230,12 +248,12 @@
   font-size: 2.5rem;
   margin: 0 0 10px 0;
   font-weight: 700;
-  color: #2c3e50;
+  color: #000000;
 }
 
 .stat-card p {
   margin: 0;
-  color: #7f8c8d;
+  color: #000000;
   font-size: 0.95rem;
   font-weight: 500;
 }
@@ -259,12 +277,12 @@
 
 .mood-item .label {
   font-weight: 600;
-  color: #555;
+  color: #000000;
 }
 
 .mood-item .value {
   font-weight: bold;
-  color: #333;
+  color: #000000;
   font-size: 1.1rem;
 }
 
@@ -285,10 +303,21 @@
   border-left: 4px solid #667eea;
 }
 
+.assessment-item .label {
+  font-weight: 600;
+  color: #000000;
+}
+
+.assessment-item .value {
+  font-weight: bold;
+  color: #000000;
+  font-size: 1.1rem;
+}
+
 .crisis-alert {
   grid-column: 1 / -1;
   background: #ffebee;
-  color: #c62828;
+  color: #000000;
   padding: 15px;
   border-radius: 8px;
   border-left: 4px solid #f44336;
@@ -313,6 +342,17 @@
   border-left: 4px solid #667eea;
 }
 
+.chat-item .label {
+  font-weight: 600;
+  color: #000000;
+}
+
+.chat-item .value {
+  font-weight: bold;
+  color: #000000;
+  font-size: 1.1rem;
+}
+
 .concerns {
   grid-column: 1 / -1;
   background: #f8f9fa;
@@ -323,7 +363,7 @@
 
 .concerns h4 {
   margin: 0 0 15px 0;
-  color: #333;
+  color: #000000;
 }
 
 .concerns ul {
@@ -333,14 +373,14 @@
 
 .concerns li {
   margin-bottom: 8px;
-  color: #555;
+  color: #000000;
 }
 
 /* AI Insights */
 .ai-insights {
   background: #f8f9fa;
   border-left: 4px solid #3498db;
-  color: #2c3e50;
+  color: #000000;
   padding: 25px;
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
@@ -350,11 +390,11 @@
   font-size: 1.05rem;
   line-height: 1.8;
   margin: 0 0 15px 0;
-  color: #34495e;
+  color: #000000;
 }
 
 .insights-timestamp {
-  color: #7f8c8d;
+  color: #000000;
   font-style: italic;
   font-size: 0.9rem;
 }
@@ -383,7 +423,7 @@
 
 .rec-header h4 {
   margin: 0;
-  color: #333;
+  color: #000000;
   font-size: 1.2rem;
 }
 
@@ -420,7 +460,7 @@
 
 .step-header h4 {
   margin: 0;
-  color: #333;
+  color: #000000;
   font-size: 1.2rem;
 }
 
@@ -441,7 +481,7 @@
 }
 
 .disclaimer {
-  color: #7f8c8d;
+  color: #000000;
   font-size: 0.9rem;
   line-height: 1.6;
   margin: 0 0 15px 0;
@@ -449,7 +489,7 @@
 }
 
 .report-id {
-  color: #bdc3c7;
+  color: #000000;
   font-size: 0.85rem;
   text-align: center;
   margin: 0;
@@ -472,6 +512,84 @@
   background: #2980b9;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Cognitive Analysis */
+.cognitive-analysis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.cognitive-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.cognitive-item .label {
+  font-weight: 600;
+  color: #000000;
+}
+
+.cognitive-item .value {
+  font-weight: bold;
+  color: #000000;
+  font-size: 1.1rem;
+}
+
+.cognitive-analysis .situations {
+  grid-column: 1 / -1;
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.cognitive-analysis .situations h4 {
+  margin: 0 0 15px 0;
+  color: #000000;
+}
+
+.cognitive-analysis .situations ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.cognitive-analysis .situations li {
+  margin-bottom: 8px;
+  color: #000000;
+}
+
+/* Assessment and Chat items */
+.assessment-item .label,
+.assessment-item .value,
+.chat-item .label,
+.chat-item .value {
+  color: #000000;
+}
+
+.assessment-item .label,
+.chat-item .label {
+  font-weight: 600;
+}
+
+.assessment-item .value,
+.chat-item .value {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+/* Recommendation and Step card text */
+.recommendation-card p,
+.step-card p {
+  color: #000000;
+  line-height: 1.6;
+  margin: 0;
 }
 
 /* Responsive Design */
