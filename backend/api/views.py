@@ -832,7 +832,14 @@ def generate_ai_insights(mood_data, assessment_data, chat_data, cognitive_data, 
     4. Areas for improvement
     """
     
-    return ai_service.generate_response(prompt)
+    result = ai_service.generate_response(prompt)
+    # Handle both dict and string responses
+    if isinstance(result, dict):
+      if result.get('success'):
+        return result.get('message', 'AI insights unavailable at this time.')
+      else:
+        return 'AI insights unavailable at this time.'
+    return str(result) if result else 'AI insights unavailable at this time.'
   except Exception as e:
     logger.error('AI insights generation failed: %s', str(e))
     return "Unable to generate AI insights at this time."
