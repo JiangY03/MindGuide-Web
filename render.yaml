@@ -1,6 +1,6 @@
 services:
   # PostgreSQL Database
-  - type: pspg
+  - type: pg
     name: mh-app-db
     databaseName: mh_app
     user: mh_app_user
