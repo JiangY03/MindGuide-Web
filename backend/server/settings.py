@@ -137,9 +137,18 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:5174',
 ]
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_HEADERS = list([
-    'accept', 'accept-encoding', 'authorization', 'content-type', 'dnt', 'origin', 'user-agent', 'x-csrftoken', 'x-requested-with', 'x-client-id'
-])
+CORS_ALLOW_HEADERS = [
+    'accept', 
+    'accept-encoding', 
+    'authorization', 
+    'content-type', 
+    'dnt', 
+    'origin', 
+    'user-agent', 
+    'x-csrftoken', 
+    'x-requested-with', 
+    'x-client-id'
+]
 CORS_EXPOSE_HEADERS = ['X-Client-Id']
 
 CSRF_TRUSTED_ORIGINS = [
@@ -238,13 +247,28 @@ if os.getenv('RENDER') or os.getenv('DATABASE_URL'):
     if 'whitenoise.middleware.WhiteNoiseMiddleware' not in MIDDLEWARE:
         MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
     
-    # CORS configuration - Allow all origins in production for flexibility
+    # CORS configuration - Allow all origins in production
+    # This ensures frontend can connect from any domain
     CORS_ALLOW_ALL_ORIGINS = True
     CORS_ALLOW_CREDENTIALS = True
+    CORS_ALLOW_HEADERS = [
+        'accept', 
+        'accept-encoding', 
+        'authorization', 
+        'content-type', 
+        'dnt', 
+        'origin', 
+        'user-agent', 
+        'x-csrftoken', 
+        'x-requested-with', 
+        'x-client-id'
+    ]
     
-    # Also add specific frontend URL if provided
+    # Also add specific frontend URL if provided (for CSRF)
     FRONTEND_URL = os.getenv('FRONTEND_URL', '')
     if FRONTEND_URL:
+        # Remove trailing slash
+        FRONTEND_URL = FRONTEND_URL.rstrip('/')
         if FRONTEND_URL not in CORS_ALLOWED_ORIGINS:
             CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
         if FRONTEND_URL not in CSRF_TRUSTED_ORIGINS:
@@ -252,6 +276,9 @@ if os.getenv('RENDER') or os.getenv('DATABASE_URL'):
     
     # Add Render hostname to CSRF trusted origins
     if render_host:
-        if render_host not in CSRF_TRUSTED_ORIGINS:
-            CSRF_TRUSTED_ORIGINS.append(f'https://{render_host}')
-            CSRF_TRUSTED_ORIGINS.append(f'http://{render_host}')
+        https_host = f'https://{render_host}'
+        http_host = f'http://{render_host}'
+        if https_host not in CSRF_TRUSTED_ORIGINS:
+            CSRF_TRUSTED_ORIGINS.append(https_host)
+        if http_host not in CSRF_TRUSTED_ORIGINS:
+            CSRF_TRUSTED_ORIGINS.append(http_host)
