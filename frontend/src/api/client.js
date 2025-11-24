@@ -1,40 +1,7 @@
 // Environment variable configuration
 const USE_MOCK = false  // Disable mock mode to use real API
-
-// Get API base URL from environment variable
-let API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
-
-// In production, detect and fix placeholder URLs
-if (import.meta.env.PROD) {
-  // Check if it's a placeholder URL (without the unique identifier)
-  if (API_BASE.includes('mh-app-backend.onrender.com') && !API_BASE.match(/mh-app-backend-[a-z0-9]+\.onrender\.com/)) {
-    console.error('❌ CRITICAL: Placeholder URL detected!')
-    console.error('Current URL:', API_BASE)
-    console.error('')
-    console.error('🔧 FIX REQUIRED:')
-    console.error('1. Go to Render Dashboard → mh-app-frontend → Environment')
-    console.error('2. Find VITE_API_BASE_URL')
-    console.error('3. Set it to your ACTUAL backend URL (e.g., https://mh-app-backend-XXXXX.onrender.com)')
-    console.error('4. Get the actual URL from: Render Dashboard → mh-app-backend → Copy service URL')
-    console.error('5. Save and wait for redeploy')
-    console.error('')
-    
-    // Try to construct a possible URL based on common patterns
-    // This is a fallback, but user MUST update the environment variable
-    const possibleUrls = [
-      'https://mh-app-backend-fg21.onrender.com',  // Common pattern
-      window.location.origin.replace('frontend', 'backend').replace('mh-app-frontend', 'mh-app-backend')
-    ]
-    
-    console.warn('⚠️ Attempting fallback URLs (may not work):', possibleUrls)
-    // Don't auto-switch, just warn - user must fix the config
-  }
-}
-
-// Log API base URL for debugging
-console.log('API Base URL configured:', API_BASE)
-console.log('Environment:', import.meta.env.MODE)
-console.log('VITE_API_BASE_URL from env:', import.meta.env.VITE_API_BASE_URL)
+// Use environment variable, read from VITE_API_BASE_URL in production, default to localhost in development
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 /**
  * Delay function - used to simulate network latency
@@ -213,98 +180,34 @@ function maybePersistClientId(data) {
 }
 
 async function realFetch(path, { method = 'GET', body, headers, params }) {
-  // Build API URL - handle both absolute and relative paths
-  let apiUrl = API_BASE || 'http://localhost:8000'
-  // Remove trailing slash from API_BASE
-  apiUrl = apiUrl.replace(/\/$/, '')
-  // Remove leading slash from path
-  const cleanPath = path.startsWith('/') ? path : '/' + path
-  const fullUrl = apiUrl + cleanPath
-  
-  // Build URL with query parameters
-  let url
-  try {
-    url = new URL(fullUrl)
-  } catch (e) {
-    // If URL construction fails, try to fix it
-    console.error('Invalid URL:', fullUrl, e)
-    throw new Error(`Invalid API URL: ${apiUrl}. Please check your VITE_API_BASE_URL configuration.`)
-  }
-  
+  const url = new URL((API_BASE || '') + path, window.location.origin)
   if (params && typeof params === 'object') {
     Object.entries(params).forEach(([k, v]) => {
       if (v !== undefined && v !== null) url.searchParams.set(k, String(v))
     })
   }
-  
   const clientId = getClientId()
-  
-  try {
-    const res = await fetch(url.toString(), {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(clientId ? { 'X-Client-Id': clientId } : {}),
-        ...(headers || {}),
-      },
-      credentials: 'include',
-      body: body ? JSON.stringify(body) : undefined,
-    })
-    
-    if (!res.ok) {
-      const text = await res.text().catch(() => '')
-      throw new Error(`Request failed ${res.status}: ${text}`)
-    }
-    
-    const ct = res.headers.get('content-type') || ''
-    if (ct.includes('application/json')) {
-      const data = await res.json()
-      maybePersistClientId(data)
-      return data
-    }
-    return res.text()
-  } catch (error) {
-    // Enhanced error handling for network issues
-    if (error.name === 'TypeError' && (error.message.includes('fetch') || error.message.includes('Failed to fetch'))) {
-      console.error('❌ Network error:', error)
-      console.error('📍 Attempted URL:', url.toString())
-      console.error('🔧 Current API_BASE:', API_BASE)
-      
-      // Provide detailed troubleshooting information
-      const troubleshooting = `
-🔍 Troubleshooting Steps:
-
-1. ✅ Check Backend Service Status:
-   - Go to Render Dashboard → mh-app-backend service
-   - Ensure service status is "Live" (not "Sleeping")
-   - If sleeping, click "Manual Deploy" to wake it up
-
-2. ✅ Verify Backend URL:
-   - In Render Dashboard → mh-app-backend → Copy the actual service URL
-   - It should look like: https://mh-app-backend-XXXXX.onrender.com
-   - NOT: https://mh-app-backend.onrender.com (this is a placeholder)
-
-3. ✅ Update Frontend Environment Variable:
-   - Go to Render Dashboard → mh-app-frontend → Environment
-   - Set VITE_API_BASE_URL to your actual backend URL
-   - Example: https://mh-app-backend-XXXXX.onrender.com
-   - Save and wait for redeploy (2-3 minutes)
-
-4. ✅ Test Backend Directly:
-   - Open: ${apiUrl}/api/health
-   - Should return: {"ok": true, "status": "healthy"}
-   - If this fails, backend is not accessible
-
-5. ✅ Check Browser Console:
-   - Press F12 → Console tab
-   - Look for CORS errors or other network issues
-      `
-      console.error(troubleshooting)
-      
-      throw new Error(`Failed to connect to server at ${apiUrl}. Check browser console for detailed troubleshooting steps.`)
-    }
-    throw error
+  const res = await fetch(url.toString(), {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(clientId ? { 'X-Client-Id': clientId } : {}),
+      ...(headers || {}),
+    },
+    credentials: 'include',
+    body: body ? JSON.stringify(body) : undefined,
+  })
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Request failed ${res.status}: ${text}`)
   }
+  const ct = res.headers.get('content-type') || ''
+  if (ct.includes('application/json')) {
+    const data = await res.json()
+    maybePersistClientId(data)
+    return data
+  }
+  return res.text()
 }
 
 export async function request(path, options = {}) {
