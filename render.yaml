@@ -37,4 +37,4 @@ services:
     staticPublishPath: ./frontend/dist
     envVars:
       - key: VITE_API_BASE_URL
-        sync: false  # ⚠️ MUST SET MANUALLY: Go to Render Dashboard → mh-app-frontend → Environment → Set to your actual backend URL (e.g., https://mh-app-backend-XXXXX.onrender.com)
+        value: https://mh-app-backend-fg21.onrender.com/  # Replace with actual backend domain
