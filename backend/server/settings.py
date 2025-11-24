@@ -187,6 +187,9 @@ AI_TEMPERATURE = float(os.getenv('AI_TEMPERATURE', '0.7'))
 AI_MODEL_PROVIDER = os.getenv('AI_MODEL_PROVIDER', 'ollama')
 
 # Production settings (Render)
+import logging
+logger = logging.getLogger(__name__)
+
 try:
     import dj_database_url
 except ImportError:
@@ -199,11 +202,21 @@ if os.getenv('RENDER') or os.getenv('DATABASE_URL'):
     SECRET_KEY = os.getenv('SECRET_KEY', SECRET_KEY)
     
     # Allowed hosts (Render will automatically provide domain)
-    ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+    # Get from environment or use default
+    allowed_hosts_str = os.getenv('ALLOWED_HOSTS', '')
+    if allowed_hosts_str:
+        ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_str.split(',') if h.strip()]
+    else:
+        ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+    
     # Add Render domain (if exists)
     render_host = os.getenv('RENDER_EXTERNAL_HOSTNAME')
     if render_host:
         ALLOWED_HOSTS.append(render_host)
+    
+    # For production, also add common Render patterns
+    # Note: Django doesn't support wildcards, so we need to add specific domains
+    # The RENDER_EXTERNAL_HOSTNAME should handle this automatically
     
     # Database configuration (prefer PostgreSQL)
     DATABASE_URL = os.getenv('DATABASE_URL')
@@ -214,9 +227,10 @@ if os.getenv('RENDER') or os.getenv('DATABASE_URL'):
             }
         except Exception as e:
             # If database connection fails, fall back to SQLite
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.warning(f'Failed to connect to PostgreSQL: {e}. Using SQLite fallback.')
+            try:
+                logger.warning(f'Failed to connect to PostgreSQL: {e}. Using SQLite fallback.')
+            except:
+                pass
             DATABASES = {
                 'default': {
                     'ENGINE': 'django.db.backends.sqlite3',
@@ -248,7 +262,5 @@ if os.getenv('RENDER') or os.getenv('DATABASE_URL'):
     if FRONTEND_URL and FRONTEND_URL not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
     
-    # Allow all origins in production (for flexibility)
-    # In production, we can use CORS_ALLOW_ALL_ORIGINS = True
-    # But for security, it's better to specify exact origins
-    # For now, we'll rely on FRONTEND_URL environment variable
+    # Allow all origins in production (temporary fix for CORS)
+    CORS_ALLOW_ALL_ORIGINS = True
