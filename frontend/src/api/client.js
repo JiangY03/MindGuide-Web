@@ -3,6 +3,11 @@ const USE_MOCK = false  // Disable mock mode to use real API
 // Use environment variable, read from VITE_API_BASE_URL in production, default to localhost in development
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
+// Log API base URL in development for debugging
+if (import.meta.env.DEV) {
+  console.log('API Base URL:', API_BASE)
+}
+
 /**
  * Delay function - used to simulate network latency
  * @param {number} ms - Delay in milliseconds
@@ -180,34 +185,56 @@ function maybePersistClientId(data) {
 }
 
 async function realFetch(path, { method = 'GET', body, headers, params }) {
-  const url = new URL((API_BASE || '') + path, window.location.origin)
+  // Build API URL - handle both absolute and relative paths
+  let apiUrl = API_BASE || 'http://localhost:8000'
+  // Remove trailing slash from API_BASE
+  apiUrl = apiUrl.replace(/\/$/, '')
+  // Remove leading slash from path
+  const cleanPath = path.startsWith('/') ? path : '/' + path
+  const fullUrl = apiUrl + cleanPath
+  
+  // Build URL with query parameters
+  const url = new URL(fullUrl)
   if (params && typeof params === 'object') {
     Object.entries(params).forEach(([k, v]) => {
       if (v !== undefined && v !== null) url.searchParams.set(k, String(v))
     })
   }
+  
   const clientId = getClientId()
-  const res = await fetch(url.toString(), {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(clientId ? { 'X-Client-Id': clientId } : {}),
-      ...(headers || {}),
-    },
-    credentials: 'include',
-    body: body ? JSON.stringify(body) : undefined,
-  })
-  if (!res.ok) {
-    const text = await res.text().catch(() => '')
-    throw new Error(`Request failed ${res.status}: ${text}`)
+  
+  try {
+    const res = await fetch(url.toString(), {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(clientId ? { 'X-Client-Id': clientId } : {}),
+        ...(headers || {}),
+      },
+      credentials: 'include',
+      body: body ? JSON.stringify(body) : undefined,
+    })
+    
+    if (!res.ok) {
+      const text = await res.text().catch(() => '')
+      throw new Error(`Request failed ${res.status}: ${text}`)
+    }
+    
+    const ct = res.headers.get('content-type') || ''
+    if (ct.includes('application/json')) {
+      const data = await res.json()
+      maybePersistClientId(data)
+      return data
+    }
+    return res.text()
+  } catch (error) {
+    // Enhanced error handling for network issues
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      console.error('Network error:', error)
+      throw new Error(`Failed to connect to server at ${apiUrl}. Please check if the backend is running and the API URL is correct.`)
+    }
+    throw error
   }
-  const ct = res.headers.get('content-type') || ''
-  if (ct.includes('application/json')) {
-    const data = await res.json()
-    maybePersistClientId(data)
-    return data
-  }
-  return res.text()
 }
 
 export async function request(path, options = {}) {
