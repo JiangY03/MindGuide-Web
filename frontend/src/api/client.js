@@ -3,9 +3,21 @@ const USE_MOCK = false  // Disable mock mode to use real API
 // Use environment variable, read from VITE_API_BASE_URL in production, default to localhost in development
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
-// Log API base URL in development for debugging
-if (import.meta.env.DEV) {
-  console.log('API Base URL:', API_BASE)
+// Log API base URL for debugging (both dev and production)
+console.log('API Base URL configured:', API_BASE)
+console.log('Environment:', import.meta.env.MODE)
+console.log('VITE_API_BASE_URL from env:', import.meta.env.VITE_API_BASE_URL)
+
+// Validate API_BASE in production
+if (import.meta.env.PROD) {
+  if (!API_BASE || API_BASE === 'http://localhost:8000') {
+    console.error('⚠️ WARNING: API_BASE is not configured correctly in production!')
+    console.error('Please set VITE_API_BASE_URL environment variable in Render Dashboard')
+  } else if (API_BASE.includes('mh-app-backend.onrender.com') && !API_BASE.includes('-')) {
+    console.error('⚠️ WARNING: API_BASE appears to be a placeholder URL!')
+    console.error('The URL should be your actual Render backend service URL (e.g., https://mh-app-backend-xxx.onrender.com)')
+    console.error('Please update VITE_API_BASE_URL in Render Dashboard with your actual backend URL')
+  }
 }
 
 /**
@@ -238,9 +250,42 @@ async function realFetch(path, { method = 'GET', body, headers, params }) {
   } catch (error) {
     // Enhanced error handling for network issues
     if (error.name === 'TypeError' && (error.message.includes('fetch') || error.message.includes('Failed to fetch'))) {
-      console.error('Network error:', error)
-      console.error('Attempted URL:', url.toString())
-      throw new Error(`Failed to connect to server at ${apiUrl}. Please check: 1) Backend service is running, 2) API URL is correct (check Render Dashboard for actual backend URL), 3) Backend service is not sleeping (free tier services sleep after inactivity).`)
+      console.error('❌ Network error:', error)
+      console.error('📍 Attempted URL:', url.toString())
+      console.error('🔧 Current API_BASE:', API_BASE)
+      
+      // Provide detailed troubleshooting information
+      const troubleshooting = `
+🔍 Troubleshooting Steps:
+
+1. ✅ Check Backend Service Status:
+   - Go to Render Dashboard → mh-app-backend service
+   - Ensure service status is "Live" (not "Sleeping")
+   - If sleeping, click "Manual Deploy" to wake it up
+
+2. ✅ Verify Backend URL:
+   - In Render Dashboard → mh-app-backend → Copy the actual service URL
+   - It should look like: https://mh-app-backend-XXXXX.onrender.com
+   - NOT: https://mh-app-backend.onrender.com (this is a placeholder)
+
+3. ✅ Update Frontend Environment Variable:
+   - Go to Render Dashboard → mh-app-frontend → Environment
+   - Set VITE_API_BASE_URL to your actual backend URL
+   - Example: https://mh-app-backend-XXXXX.onrender.com
+   - Save and wait for redeploy (2-3 minutes)
+
+4. ✅ Test Backend Directly:
+   - Open: ${apiUrl}/api/health
+   - Should return: {"ok": true, "status": "healthy"}
+   - If this fails, backend is not accessible
+
+5. ✅ Check Browser Console:
+   - Press F12 → Console tab
+   - Look for CORS errors or other network issues
+      `
+      console.error(troubleshooting)
+      
+      throw new Error(`Failed to connect to server at ${apiUrl}. Check browser console for detailed troubleshooting steps.`)
     }
     throw error
   }
