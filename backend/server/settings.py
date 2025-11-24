@@ -214,6 +214,8 @@ if os.getenv('RENDER') or os.getenv('DATABASE_URL'):
             }
         except Exception as e:
             # If database connection fails, fall back to SQLite
+            import logging
+            logger = logging.getLogger(__name__)
             logger.warning(f'Failed to connect to PostgreSQL: {e}. Using SQLite fallback.')
             DATABASES = {
                 'default': {
@@ -245,12 +247,8 @@ if os.getenv('RENDER') or os.getenv('DATABASE_URL'):
         CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
     if FRONTEND_URL and FRONTEND_URL not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
-    # Also allow all render.com subdomains for flexibility
-    CORS_ALLOWED_ORIGINS.extend([
-        'https://*.onrender.com',
-        'http://*.onrender.com'
-    ])
-    CSRF_TRUSTED_ORIGINS.extend([
-        'https://*.onrender.com',
-        'http://*.onrender.com'
-    ])
+    
+    # Allow all origins in production (for flexibility)
+    # In production, we can use CORS_ALLOW_ALL_ORIGINS = True
+    # But for security, it's better to specify exact origins
+    # For now, we'll rely on FRONTEND_URL environment variable
