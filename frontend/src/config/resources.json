@@ -1,0 +1,17 @@
+{
+  "hotlines": [
+    { "label": "National Suicide Prevention Lifeline", "number": "988" },
+    { "label": "Emergency Services", "number": "911" },
+    { "label": "Crisis Text Line", "number": "Text HOME to 741741" },
+    { "label": "Campus/Community Counseling Center", "number": "Contact local institution" }
+  ],
+  "disclaimer": "This application is for mental health self-help and education only, and does not provide medical diagnosis or treatment advice. In case of emergency, please contact local emergency services or professionals immediately."
+}
+
+
+
+
+
+
+
+
