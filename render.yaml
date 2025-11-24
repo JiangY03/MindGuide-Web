@@ -6,7 +6,7 @@ services:
     plan: free
     region: oregon  # Match database region
     buildCommand: cd backend && chmod +x build.sh && ./build.sh
-    startCommand: cd backend && gunicorn server.wsgi:application
+    startCommand: cd backend && python manage.py migrate --noinput && gunicorn server.wsgi:application
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -21,11 +21,13 @@ services:
       - key: FRONTEND_URL
         value: https://your-frontend.onrender.com  # Replace with actual frontend domain
       - key: AI_MODEL_PROVIDER
-        value: openai
+        value: openai  # Options: 'ollama' (local), 'openai', 'gemini', 'claude'
       - key: AI_API_KEY
-        sync: false  # Set manually in Render Dashboard
+        sync: false  # Set manually: OpenAI API key, Gemini API key, or Claude API key
+      - key: AI_MODEL_NAME
+        value: gpt-3.5-turbo  # For OpenAI: 'gpt-3.5-turbo' or 'gpt-4'
       - key: OLLAMA_BASE_URL
-        value: http://localhost:11434
+        value: http://localhost:11434  # Only used if AI_MODEL_PROVIDER=ollama
 
   # React Frontend (Static Site)
   - type: web
