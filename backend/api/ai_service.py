@@ -280,9 +280,15 @@ class AIService:
                 return response.status_code == 200
             except:
                 return False
-        elif self.provider in ['openai', 'gemini', 'claude']:
-            # For cloud providers, check if API key is configured
-            return bool(self.api_key)
+        elif self.provider == 'openai':
+            # Check if API key is configured and looks valid (starts with sk-)
+            return bool(self.api_key and self.api_key.startswith('sk-'))
+        elif self.provider == 'gemini':
+            # Check if API key is configured (Gemini keys are usually long strings)
+            return bool(self.api_key and len(self.api_key) > 20)
+        elif self.provider == 'claude':
+            # Check if API key is configured (Claude keys start with sk-ant-)
+            return bool(self.api_key and (self.api_key.startswith('sk-ant-') or len(self.api_key) > 20))
         else:
             return False
 
