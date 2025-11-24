@@ -200,13 +200,8 @@ AI_API_KEY = os.getenv('AI_API_KEY', '')  # For OpenAI, Gemini, Claude
 import logging
 logger = logging.getLogger(__name__)
 
-try:
-    import dj_database_url
-except ImportError:
-    dj_database_url = None
-
 # Read configuration from environment variables (production environment)
-if os.getenv('RENDER') or os.getenv('DATABASE_URL'):
+if os.getenv('RENDER'):
     # Production environment configuration
     DEBUG = os.getenv('DEBUG', 'False') == 'True'
     SECRET_KEY = os.getenv('SECRET_KEY', SECRET_KEY)
@@ -224,20 +219,15 @@ if os.getenv('RENDER') or os.getenv('DATABASE_URL'):
     if render_host:
         ALLOWED_HOSTS.append(render_host)
     
-    # For production, also add common Render patterns
-    # Note: Django doesn't support wildcards, so we need to add specific domains
-    # The RENDER_EXTERNAL_HOSTNAME should handle this automatically
-    
     # Database configuration - Force SQLite in production for reliability
     # This avoids connection issues with PostgreSQL on Render
+    # IMPORTANT: Completely ignore DATABASE_URL to prevent PostgreSQL connection attempts
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-    # Explicitly ignore DATABASE_URL to prevent connection attempts
-    # If you need PostgreSQL, configure it manually after ensuring the database is accessible
     
     # Static files configuration
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
