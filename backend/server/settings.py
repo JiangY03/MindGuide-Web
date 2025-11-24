@@ -219,42 +219,16 @@ if os.getenv('RENDER') or os.getenv('DATABASE_URL'):
     # Note: Django doesn't support wildcards, so we need to add specific domains
     # The RENDER_EXTERNAL_HOSTNAME should handle this automatically
     
-    # Database configuration - Use SQLite by default for reliability
-    # PostgreSQL can be configured via DATABASE_URL if needed
+    # Database configuration - Force SQLite in production for reliability
+    # This avoids connection issues with PostgreSQL on Render
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-    
-    # Optionally try PostgreSQL if DATABASE_URL is set and valid
-    DATABASE_URL = os.getenv('DATABASE_URL')
-    if DATABASE_URL and dj_database_url:
-        try:
-            db_config = dj_database_url.parse(DATABASE_URL, conn_max_age=600)
-            # Only use PostgreSQL if hostname contains render.com (external) or is localhost
-            host = db_config.get('HOST', '')
-            if host and ('render.com' in host or 'localhost' in host or '127.0.0.1' in host):
-                DATABASES = {
-                    'default': db_config
-                }
-                try:
-                    logger.info(f'Using PostgreSQL database: {host}')
-                except:
-                    pass
-            else:
-                # Internal Render hostname (dpg-xxx-a) may not resolve immediately
-                # Use SQLite instead for reliability
-                try:
-                    logger.info(f'PostgreSQL hostname {host} may not be accessible. Using SQLite.')
-                except:
-                    pass
-        except Exception as e:
-            try:
-                logger.warning(f'PostgreSQL configuration failed: {e}. Using SQLite.')
-            except:
-                pass
+    # Explicitly ignore DATABASE_URL to prevent connection attempts
+    # If you need PostgreSQL, configure it manually after ensuring the database is accessible
     
     # Static files configuration
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
@@ -264,13 +238,20 @@ if os.getenv('RENDER') or os.getenv('DATABASE_URL'):
     if 'whitenoise.middleware.WhiteNoiseMiddleware' not in MIDDLEWARE:
         MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
     
-    # CORS configuration (read frontend domain from environment variable)
-    FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
-    # Add frontend URL to CORS and CSRF
-    if FRONTEND_URL and FRONTEND_URL not in CORS_ALLOWED_ORIGINS:
-        CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
-    if FRONTEND_URL and FRONTEND_URL not in CSRF_TRUSTED_ORIGINS:
-        CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
-    
-    # Allow all origins in production (temporary fix for CORS)
+    # CORS configuration - Allow all origins in production for flexibility
     CORS_ALLOW_ALL_ORIGINS = True
+    CORS_ALLOW_CREDENTIALS = True
+    
+    # Also add specific frontend URL if provided
+    FRONTEND_URL = os.getenv('FRONTEND_URL', '')
+    if FRONTEND_URL:
+        if FRONTEND_URL not in CORS_ALLOWED_ORIGINS:
+            CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
+        if FRONTEND_URL not in CSRF_TRUSTED_ORIGINS:
+            CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
+    
+    # Add Render hostname to CSRF trusted origins
+    if render_host:
+        if render_host not in CSRF_TRUSTED_ORIGINS:
+            CSRF_TRUSTED_ORIGINS.append(f'https://{render_host}')
+            CSRF_TRUSTED_ORIGINS.append(f'http://{render_host}')
