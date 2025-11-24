@@ -180,7 +180,16 @@ function maybePersistClientId(data) {
 }
 
 async function realFetch(path, { method = 'GET', body, headers, params }) {
-  const url = new URL((API_BASE || '') + path, window.location.origin)
+  // Build API URL - handle both absolute and relative paths
+  let apiUrl = API_BASE || 'http://localhost:8000'
+  // Remove trailing slash from API_BASE
+  apiUrl = apiUrl.replace(/\/$/, '')
+  // Ensure path starts with a slash
+  const cleanPath = path.startsWith('/') ? path : '/' + path
+  const fullUrl = apiUrl + cleanPath
+  
+  // Build URL with query parameters
+  const url = new URL(fullUrl)
   if (params && typeof params === 'object') {
     Object.entries(params).forEach(([k, v]) => {
       if (v !== undefined && v !== null) url.searchParams.set(k, String(v))
