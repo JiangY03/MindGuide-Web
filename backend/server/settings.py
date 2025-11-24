@@ -187,7 +187,10 @@ AI_TEMPERATURE = float(os.getenv('AI_TEMPERATURE', '0.7'))
 AI_MODEL_PROVIDER = os.getenv('AI_MODEL_PROVIDER', 'ollama')
 
 # Production settings (Render)
-import dj_database_url
+try:
+    import dj_database_url
+except ImportError:
+    dj_database_url = None
 
 # Read configuration from environment variables (production environment)
 if os.getenv('RENDER') or os.getenv('DATABASE_URL'):
@@ -237,7 +240,17 @@ if os.getenv('RENDER') or os.getenv('DATABASE_URL'):
     
     # CORS configuration (read frontend domain from environment variable)
     FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
-    if FRONTEND_URL not in CORS_ALLOWED_ORIGINS:
+    # Add frontend URL to CORS and CSRF
+    if FRONTEND_URL and FRONTEND_URL not in CORS_ALLOWED_ORIGINS:
         CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
-    if FRONTEND_URL not in CSRF_TRUSTED_ORIGINS:
+    if FRONTEND_URL and FRONTEND_URL not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
+    # Also allow all render.com subdomains for flexibility
+    CORS_ALLOWED_ORIGINS.extend([
+        'https://*.onrender.com',
+        'http://*.onrender.com'
+    ])
+    CSRF_TRUSTED_ORIGINS.extend([
+        'https://*.onrender.com',
+        'http://*.onrender.com'
+    ])
