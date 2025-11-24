@@ -194,7 +194,15 @@ async function realFetch(path, { method = 'GET', body, headers, params }) {
   const fullUrl = apiUrl + cleanPath
   
   // Build URL with query parameters
-  const url = new URL(fullUrl)
+  let url
+  try {
+    url = new URL(fullUrl)
+  } catch (e) {
+    // If URL construction fails, try to fix it
+    console.error('Invalid URL:', fullUrl, e)
+    throw new Error(`Invalid API URL: ${apiUrl}. Please check your VITE_API_BASE_URL configuration.`)
+  }
+  
   if (params && typeof params === 'object') {
     Object.entries(params).forEach(([k, v]) => {
       if (v !== undefined && v !== null) url.searchParams.set(k, String(v))
@@ -229,9 +237,10 @@ async function realFetch(path, { method = 'GET', body, headers, params }) {
     return res.text()
   } catch (error) {
     // Enhanced error handling for network issues
-    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+    if (error.name === 'TypeError' && (error.message.includes('fetch') || error.message.includes('Failed to fetch'))) {
       console.error('Network error:', error)
-      throw new Error(`Failed to connect to server at ${apiUrl}. Please check if the backend is running and the API URL is correct.`)
+      console.error('Attempted URL:', url.toString())
+      throw new Error(`Failed to connect to server at ${apiUrl}. Please check: 1) Backend service is running, 2) API URL is correct (check Render Dashboard for actual backend URL), 3) Backend service is not sleeping (free tier services sleep after inactivity).`)
     }
     throw error
   }
