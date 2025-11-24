@@ -5,7 +5,7 @@ services:
     runtime: python
     plan: free
     buildCommand: cd backend && chmod +x build.sh && ./build.sh
-    startCommand: cd backend && gunicorn server.wsgi:application
+    startCommand: cd backend && python manage.py migrate && gunicorn server.wsgi:application
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
