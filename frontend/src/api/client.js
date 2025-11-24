@@ -1,24 +1,40 @@
 // Environment variable configuration
 const USE_MOCK = false  // Disable mock mode to use real API
-// Use environment variable, read from VITE_API_BASE_URL in production, default to localhost in development
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
-// Log API base URL for debugging (both dev and production)
+// Get API base URL from environment variable
+let API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+
+// In production, detect and fix placeholder URLs
+if (import.meta.env.PROD) {
+  // Check if it's a placeholder URL (without the unique identifier)
+  if (API_BASE.includes('mh-app-backend.onrender.com') && !API_BASE.match(/mh-app-backend-[a-z0-9]+\.onrender\.com/)) {
+    console.error('❌ CRITICAL: Placeholder URL detected!')
+    console.error('Current URL:', API_BASE)
+    console.error('')
+    console.error('🔧 FIX REQUIRED:')
+    console.error('1. Go to Render Dashboard → mh-app-frontend → Environment')
+    console.error('2. Find VITE_API_BASE_URL')
+    console.error('3. Set it to your ACTUAL backend URL (e.g., https://mh-app-backend-XXXXX.onrender.com)')
+    console.error('4. Get the actual URL from: Render Dashboard → mh-app-backend → Copy service URL')
+    console.error('5. Save and wait for redeploy')
+    console.error('')
+    
+    // Try to construct a possible URL based on common patterns
+    // This is a fallback, but user MUST update the environment variable
+    const possibleUrls = [
+      'https://mh-app-backend-fg21.onrender.com',  // Common pattern
+      window.location.origin.replace('frontend', 'backend').replace('mh-app-frontend', 'mh-app-backend')
+    ]
+    
+    console.warn('⚠️ Attempting fallback URLs (may not work):', possibleUrls)
+    // Don't auto-switch, just warn - user must fix the config
+  }
+}
+
+// Log API base URL for debugging
 console.log('API Base URL configured:', API_BASE)
 console.log('Environment:', import.meta.env.MODE)
 console.log('VITE_API_BASE_URL from env:', import.meta.env.VITE_API_BASE_URL)
-
-// Validate API_BASE in production
-if (import.meta.env.PROD) {
-  if (!API_BASE || API_BASE === 'http://localhost:8000') {
-    console.error('⚠️ WARNING: API_BASE is not configured correctly in production!')
-    console.error('Please set VITE_API_BASE_URL environment variable in Render Dashboard')
-  } else if (API_BASE.includes('mh-app-backend.onrender.com') && !API_BASE.includes('-')) {
-    console.error('⚠️ WARNING: API_BASE appears to be a placeholder URL!')
-    console.error('The URL should be your actual Render backend service URL (e.g., https://mh-app-backend-xxx.onrender.com)')
-    console.error('Please update VITE_API_BASE_URL in Render Dashboard with your actual backend URL')
-  }
-}
 
 /**
  * Delay function - used to simulate network latency
