@@ -204,9 +204,27 @@ if os.getenv('RENDER') or os.getenv('DATABASE_URL'):
     
     # Database configuration (prefer PostgreSQL)
     DATABASE_URL = os.getenv('DATABASE_URL')
-    if DATABASE_URL:
+    if DATABASE_URL and dj_database_url:
+        try:
+            DATABASES = {
+                'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+            }
+        except Exception as e:
+            # If database connection fails, fall back to SQLite
+            logger.warning(f'Failed to connect to PostgreSQL: {e}. Using SQLite fallback.')
+            DATABASES = {
+                'default': {
+                    'ENGINE': 'django.db.backends.sqlite3',
+                    'NAME': BASE_DIR / 'db.sqlite3',
+                }
+            }
+    else:
+        # No DATABASE_URL, use SQLite
         DATABASES = {
-            'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
         }
     
     # Static files configuration
