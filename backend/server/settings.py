@@ -206,18 +206,25 @@ if os.getenv('RENDER'):
     DEBUG = os.getenv('DEBUG', 'False') == 'True'
     SECRET_KEY = os.getenv('SECRET_KEY', SECRET_KEY)
     
-    # Allowed hosts (Render will automatically provide domain)
-    # Get from environment or use default
-    allowed_hosts_str = os.getenv('ALLOWED_HOSTS', '')
-    if allowed_hosts_str:
-        ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_str.split(',') if h.strip()]
-    else:
-        ALLOWED_HOSTS = ['localhost', '127.0.0.1']
-    
+    # Allowed hosts - add Render domain and common patterns
+    ALLOWED_HOSTS = []
     # Add Render domain (if exists)
     render_host = os.getenv('RENDER_EXTERNAL_HOSTNAME')
     if render_host:
         ALLOWED_HOSTS.append(render_host)
+        # Also add without protocol
+        if '.' in render_host:
+            ALLOWED_HOSTS.append(render_host.split('://')[-1] if '://' in render_host else render_host)
+    # Add from environment if provided
+    allowed_hosts_str = os.getenv('ALLOWED_HOSTS', '')
+    if allowed_hosts_str:
+        for h in allowed_hosts_str.split(','):
+            h = h.strip()
+            if h and h not in ALLOWED_HOSTS:
+                ALLOWED_HOSTS.append(h)
+    # Fallback to localhost if nothing set
+    if not ALLOWED_HOSTS:
+        ALLOWED_HOSTS = ['localhost', '127.0.0.1']
     
     # Database configuration - Force SQLite in production for reliability
     # This avoids connection issues with PostgreSQL on Render
